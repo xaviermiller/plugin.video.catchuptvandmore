@@ -184,6 +184,6 @@ def get_live_url(plugin, item_id, **kwargs):
 
     resp = urlquick.get(choice, headers=GENERIC_HEADERS, max_age=-1)
     root = resp.parse()
-    video_id = root.find('.//div[@class="magneto"]').get('data-id')
+    video_id = root.find('.//figure[@class="magneto"]').get('data-id')
 
     return resolver_proxy.get_francetv_live_stream(plugin, broadcast_id=video_id)
