@@ -365,10 +365,7 @@ def get_live_url(plugin, item_id, **kwargs):
         if data["name"] == temp_id:
             for stream in data["streams"]:
                 if stream["drm"] == "WIDEVINE":
-
-                    # Workaround for IA bug : https://github.com/xbmc/inputstream.adaptive/issues/804
-                    response = urlquick.get(stream["url"], headers=GENERIC_HEADERS, max_age=-1)
-                    video_url = re.search('<Location>([^<]+)</Location>', response.text).group(1).replace(';', '&')
+                    video_url = stream["url"]
                     customdata = CUSTOMDATALIVE.format(web_utils.get_random_windows_ua(), token, "undefined")
                     headers = {
                         'User-Agent': web_utils.get_random_windows_ua(),
