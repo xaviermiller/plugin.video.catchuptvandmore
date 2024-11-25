@@ -47,6 +47,9 @@ URL_LIVE_BFMTV = 'http://www.bfmtv.com/mediaplayer/live-video/'
 # Channel BFM Business
 URL_LIVE_BFMBUSINESS = 'http://bfmbusiness.bfmtv.com/mediaplayer/live-video/'
 
+# Channel BFM Business
+URL_LIVE_BFM2 = 'https://www.bfmtv.com/en-direct/bfm2/'
+
 DESIRED_QUALITY = Script.setting['quality']
 
 # Dailymotion Id get from these pages below
@@ -54,6 +57,8 @@ DESIRED_QUALITY = Script.setting['quality']
 LIVE_DAILYMOTION_ID = {
     'bfmtv': 'xgz4t1'
 }
+
+GENERIC_HEADERS = {'User-Agent': web_utils.get_random_windows_ua()}
 
 
 def get_token(item_id):
@@ -204,14 +209,19 @@ def get_live_url(plugin, item_id, **kwargs):
     if item_id == 'bfmtv':
         return resolver_proxy.get_stream_dailymotion(plugin, LIVE_DAILYMOTION_ID[item_id], False)
 
-    if item_id == 'bfmbusiness':
-        resp = urlquick.get(URL_LIVE_BFMBUSINESS,
-                            headers={'User-Agent': web_utils.get_random_windows_ua()},
-                            max_age=-1)
+    elif item_id == 'bfmbusiness':
+        resp = urlquick.get(URL_LIVE_BFMBUSINESS, headers=GENERIC_HEADERS, max_age=-1)
         root = resp.parse()
         live_datas = root.find(".//div[@class='video_block']")
-        data_account = live_datas.get('accountid')
-        data_video_id = live_datas.get('videoid')
-        data_player = live_datas.get('playerid')
-        return resolver_proxy.get_brightcove_video_json(plugin, data_account,
-                                                        data_player, data_video_id)
+        account = live_datas.get('accountid')
+        video_id = live_datas.get('videoid')
+        player = live_datas.get('playerid')
+    else:
+        resp = urlquick.get(URL_LIVE_BFM2, headers=GENERIC_HEADERS, max_age=-1)
+        root = resp.parse()
+        live_datas = root.find(".//video-js")
+        account = live_datas.get('data-account')
+        video_id = live_datas.get('data-video-id')
+        player = live_datas.get('adjustplayer')
+
+    return resolver_proxy.get_brightcove_video_json(plugin, account, player, video_id)
