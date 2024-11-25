@@ -338,9 +338,7 @@ def playpodcast(plugin, path, title, **kwargs):
     return item
 
 
-@Resolver.register
-def get_live_url(plugin, item_id, **kwargs):
-
+def bfm_player(plugin, item_id, **kwargs):
     headers = {
         'User-Agent': web_utils.get_random_windows_ua(),
         'Content-type': 'application/json',
@@ -374,3 +372,8 @@ def get_live_url(plugin, item_id, **kwargs):
                         'Content-Type': ''
                     }
                     return resolver_proxy.get_stream_with_quality(plugin, video_url=video_url, license_url=LICENSE_URL, manifest_type='mpd', headers=headers)
+
+
+@Resolver.register
+def get_live_url(plugin, item_id, **kwargs):
+    return bfm_player(plugin, item_id, **kwargs)

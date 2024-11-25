@@ -161,7 +161,7 @@ menu = {
         'order': 13
     },
     'BFM TV': {
-        'resolver': '/resources/lib/channels/fr/rmcbfmplay:get_live_url',
+        'resolver': '/resources/lib/channels/fr/bfmtv:get_live_url',
         'label': 'BFM TV',
         'thumb': 'channels/fr/bfmtv.png',
         'fanart': 'channels/fr/bfmtv_fanart.jpg',
@@ -693,7 +693,7 @@ menu = {
         'order': 64
     },
     'BFM Business': {
-        'resolver': '/resources/lib/channels/fr/rmcbfmplay:get_live_url',
+        'resolver': '/resources/lib/channels/fr/bfmtv:get_live_url',
         'label': 'BFM Business',
         'thumb': 'channels/fr/bfmbusiness.png',
         'fanart': 'channels/fr/bfmbusiness_fanart.jpg',

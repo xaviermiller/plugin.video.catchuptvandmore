@@ -17,6 +17,7 @@ from resources.lib import download, resolver_proxy, web_utils
 from resources.lib.addon_utils import Quality
 from resources.lib.menu_utils import item_post_treatment
 from resources.lib.py_utils import old_div
+from resources.lib.channels.fr import rmcbfmplay
 
 
 # TO DO
@@ -42,10 +43,10 @@ URL_VIDEO = 'http://api.nextradiotv.com/%s-applications/%s/' \
 
 # URL Live
 # Channel BFMTV
-URL_LIVE_BFMTV = 'http://www.bfmtv.com/mediaplayer/live-video/'
+URL_LIVE_BFMTV = 'https://www.bfmtv.com/en-direct/'
 
 # Channel BFM Business
-URL_LIVE_BFMBUSINESS = 'http://bfmbusiness.bfmtv.com/mediaplayer/live-video/'
+URL_LIVE_BFMBUSINESS = 'https://www.bfmtv.com/economie/en-direct/'
 
 # Channel BFM Business
 URL_LIVE_BFM2 = 'https://www.bfmtv.com/en-direct/bfm2/'
@@ -66,6 +67,16 @@ def get_token(item_id):
     resp = urlquick.get(URL_TOKEN % item_id)
     json_parser = json.loads(resp.text)
     return json_parser['session']['token']
+
+
+def BFM_brightcove(plugin, live_url):
+    resp = urlquick.get(live_url, headers=GENERIC_HEADERS, max_age=-1)
+    root = resp.parse()
+    live_datas = root.find(".//video-js")
+    account = live_datas.get('data-account')
+    video_id = live_datas.get('data-video-id')
+    player = live_datas.get('adjustplayer')
+    return resolver_proxy.get_brightcove_video_json(plugin, account, player, video_id)
 
 
 @Route.register
@@ -206,22 +217,22 @@ def get_video_url(plugin,
 @Resolver.register
 def get_live_url(plugin, item_id, **kwargs):
 
-    if item_id == 'bfmtv':
-        return resolver_proxy.get_stream_dailymotion(plugin, LIVE_DAILYMOTION_ID[item_id], False)
+    if item_id == 'BFM TV':
+        try:
+            return resolver_proxy.get_stream_dailymotion(plugin, LIVE_DAILYMOTION_ID[item_id], False)
+        except Exception:
+            try:
+                return BFM_brightcove(plugin, URL_LIVE_BFMTV)
+            except Exception:
+                return rmcbfmplay.bfm_player(plugin, item_id)
 
-    elif item_id == 'bfmbusiness':
-        resp = urlquick.get(URL_LIVE_BFMBUSINESS, headers=GENERIC_HEADERS, max_age=-1)
-        root = resp.parse()
-        live_datas = root.find(".//div[@class='video_block']")
-        account = live_datas.get('accountid')
-        video_id = live_datas.get('videoid')
-        player = live_datas.get('playerid')
-    else:
-        resp = urlquick.get(URL_LIVE_BFM2, headers=GENERIC_HEADERS, max_age=-1)
-        root = resp.parse()
-        live_datas = root.find(".//video-js")
-        account = live_datas.get('data-account')
-        video_id = live_datas.get('data-video-id')
-        player = live_datas.get('adjustplayer')
+    try:
+        if item_id == 'BFM Business':
+            live_url = URL_LIVE_BFMBUSINESS
+        if item_id == 'BFM2':
+            live_url = URL_LIVE_BFM2
 
-    return resolver_proxy.get_brightcove_video_json(plugin, account, player, video_id)
+        return BFM_brightcove(plugin, live_url)
+
+    except Exception:
+        return rmcbfmplay.bfm_player(plugin, item_id)
